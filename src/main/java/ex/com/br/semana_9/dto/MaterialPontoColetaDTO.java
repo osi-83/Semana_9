@@ -4,14 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PontoColetaDTO {
+public class MaterialPontoColetaDTO {
     private Long id;
-    private String nome;
-    private String endereco;
-    private List<MaterialAceitoDTO> materiais;
+    private String tipoLixoEletronico;
+    private Integer capacidadeMaxima;
 }

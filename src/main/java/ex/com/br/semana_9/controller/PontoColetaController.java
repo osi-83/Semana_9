@@ -1,6 +1,6 @@
 package ex.com.br.semana_9.controller;
 
-import ex.com.br.semana_9.dto.PontoColetaDTO;
+import ex.com.br.semana_9.dto.PontoDeColetaDTO;
 import ex.com.br.semana_9.service.PontoColetaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,22 +19,28 @@ public class PontoColetaController {
     }
 
     @PostMapping
-    public ResponseEntity<PontoColetaDTO> create(@RequestBody PontoColetaDTO dto) {
+    public ResponseEntity<PontoDeColetaDTO> create(@RequestBody PontoDeColetaDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(dto));
     }
 
     @GetMapping
-    public ResponseEntity<List<PontoColetaDTO>> findAll() {
+    public ResponseEntity<List<PontoDeColetaDTO>> findAll() {
         return ResponseEntity.ok(service.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PontoColetaDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<PontoDeColetaDTO> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
+    @GetMapping("/electronic-waste/name/{name}")
+    public ResponseEntity<List<PontoDeColetaDTO>> getByLixoEletronicoName(@PathVariable String name) {
+        List<PontoDeColetaDTO> pontos = service.findByLixoEletronicoName(name);
+        return ResponseEntity.ok(pontos);
+    }
+
     @PutMapping("/{id}")
-    public ResponseEntity<PontoColetaDTO> update(@PathVariable Long id, @RequestBody PontoColetaDTO dto) {
+    public ResponseEntity<PontoDeColetaDTO> update(@PathVariable Long id, @RequestBody PontoDeColetaDTO dto) {
         return ResponseEntity.ok(service.update(id, dto));
     }
 

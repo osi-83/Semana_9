@@ -4,11 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MaterialAceitoDTO {
+public class PontoDeColetaDTO {
     private Long id;
     private String nome;
-
+    private String endereco;
+    private String diaDeColeta;
+    private List<MaterialAceitoDTO> materiais;
 }

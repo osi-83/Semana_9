@@ -1,11 +1,15 @@
 package ex.com.br.semana_9.service;
 
 import ex.com.br.semana_9.dto.MaterialAceitoDTO;
-import ex.com.br.semana_9.dto.PontoColetaDTO;
-import ex.com.br.semana_9.entity.MaterialAceito;
-import ex.com.br.semana_9.entity.PontoColeta;
+import ex.com.br.semana_9.dto.MaterialPontoColetaDTO;
+import ex.com.br.semana_9.dto.PontoDeColetaDTO;
+import ex.com.br.semana_9.entity.LixoEletronico;
+import ex.com.br.semana_9.entity.MaterialPontoColeta;
+import ex.com.br.semana_9.entity.PontoDeColeta;
 import ex.com.br.semana_9.exception.ResourceNotFoundException;
 import ex.com.br.semana_9.repository.PontoColetaRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,82 +20,77 @@ public class PontoColetaService {
 
     private final PontoColetaRepository repository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     public PontoColetaService(PontoColetaRepository repository) {
         this.repository = repository;
     }
 
-    private PontoColetaDTO convertToDTO(PontoColeta entity) {
-        List<MaterialAceitoDTO> materiaisDTO = entity.getMateriais().stream()
-                .map(m -> new MaterialAceitoDTO(m.getId(), m.getNome()))
+    private PontoDeColetaDTO convertToDTO(PontoDeColeta entity) {
+        List<MaterialPontoColetaDTO> materiaisDTO = entity.getMateriaisAceitos().stream()
+                .map(m -> new MaterialPontoColetaDTO(
+                        m.getId(),
+                        m.getLixoEletronico().getTipo(),
+                        m.getCapacidadeMaxima()
+                ))
                 .collect(Collectors.toList());
-        return new PontoColetaDTO(entity.getId(), entity.getNome(), entity.getEndereco(), materiaisDTO);
+
+        return new PontoDeColetaDTO(
+                entity.getId(),
+                entity.getNome(),
+                entity.getEndereco(),
+                entity.getDiaDeColeta(),
+                materiaisDTO
+        );
     }
 
-    private PontoColeta convertToEntity(PontoColetaDTO dto) {
-        PontoColeta entity = new PontoColeta();
-        entity.setId(dto.getId());
+    public PontoDeColetaDTO create(PontoDeColetaDTO dto) {
+        PontoDeColeta entity = new PontoDeColeta();
         entity.setNome(dto.getNome());
         entity.setEndereco(dto.getEndereco());
+        entity.setDiaDeColeta(dto.getDiaDeColeta());
 
-        List<MaterialAceito> materiais = dto.getMateriais().stream()
-                .map(m -> {
-                    MaterialAceito material = new MaterialAceito();
-                    material.setId(m.getId());
-                    material.setNome(m.getNome());
-                    material.setPontoColeta(entity);
-                    return material;
-                })
-                .collect(Collectors.toList());
-        entity.setMateriais(materiais);
+        List<MaterialPontoColeta> materiais = dto.getMateriais().stream().map(m -> {
+            LixoEletronico lixo = entityManager.find(LixoEletronico.class, m.getId());
+            MaterialPontoColeta material = new MaterialPontoColeta();
+            material.setCapacidadeMaxima(m.getCapacidadeMaxima());
+            return material;
+        }).collect(Collectors.toList());
 
-        return entity;
-    }
+        entity.setMateriaisAceitos(materiais);
 
-    public PontoColetaDTO create(PontoColetaDTO dto) {
-        PontoColeta entity = convertToEntity(dto);
-        PontoColeta saved = repository.save(entity);
+        PontoDeColeta saved = repository.save(entity);
         return convertToDTO(saved);
     }
 
-    public List<PontoColetaDTO> findAll() {
+    public List<PontoDeColetaDTO> findAll() {
         return repository.findAll().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    public PontoColetaDTO findById(Long id) {
-        PontoColeta entity = repository.findById(id)
+    public List<PontoDeColetaDTO> findByLixoEletronicoName(String name) {
+        return repository.findByLixoEletronicoName(name).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public PontoDeColetaDTO findById(Long id) {
+        PontoDeColeta entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ponto de coleta não encontrado com id " + id));
         return convertToDTO(entity);
     }
 
-    public PontoColetaDTO update(Long id, PontoColetaDTO dto) {
-        PontoColeta entity = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Ponto de coleta não encontrado com id " + id));
-
-        entity.setNome(dto.getNome());
-        entity.setEndereco(dto.getEndereco());
-
-        // Atualiza materiais (remove os antigos e adiciona os novos)
-        entity.getMateriais().clear();
-        List<MaterialAceito> materiais = dto.getMateriais().stream()
-                .map(m -> {
-                    MaterialAceito material = new MaterialAceito();
-                    material.setId(m.getId());
-                    material.setNome(m.getNome());
-                    material.setPontoColeta(entity);
-                    return material;
-                })
-                .collect(Collectors.toList());
-        entity.getMateriais().addAll(materiais);
-
-        PontoColeta updated = repository.save(entity);
-        return convertToDTO(updated);
-    }
-
     public void delete(Long id) {
-        PontoColeta entity = repository.findById(id)
+        PontoDeColeta entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ponto de coleta não encontrado com id " + id));
         repository.delete(entity);
     }
+
+    public PontoDeColetaDTO update(
+            Long id,
+            PontoDeColetaDTO dto) {
+    }
 }
+

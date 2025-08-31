@@ -1,7 +1,16 @@
 package ex.com.br.semana_9.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+
+@Entity
+@Table(name = "material_ponto_coleta")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class MaterialPontoColeta {
 
     @Id
